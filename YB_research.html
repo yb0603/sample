@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>YB Research — 기업 유동성·디폴트 리스크 리서치</title>
+<style>
+  :root {
+    --green: #86BC25;       /* Deloitte green */
+    --green-dark: #6fa015;
+    --black: #0a0a0a;
+    --ink: #141414;
+    --sky: #8DEBFB;         /* 연한 하늘색 (#00DDFA 보다 연하게) */
+    --sky-soft: #d6f7fe;
+    --gray: #5b6168;
+    --line: #e6e8eb;
+    --bg: #ffffff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "Segoe UI", "Malgun Gothic", system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.6;
+    overflow-x: hidden;            /* 모바일 가로 넘침 방지 */
+  }
+  img { max-width: 100%; }
+  a { text-decoration: none; color: inherit; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+  section { scroll-margin-top: 86px; }
+
+  /* ---------- Header ---------- */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,10,10,0.96);
+    border-bottom: 2px solid var(--green);
+    backdrop-filter: blur(6px);
+  }
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 72px;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand img { height: 44px; width: auto; display: block; object-fit: contain; }
+  .nav-links { display: flex; align-items: center; gap: 34px; }
+  .nav-links a {
+    color: #f2f3f4; font-weight: 600; font-size: 15px; letter-spacing: .2px;
+    position: relative; padding: 6px 0; transition: color .2s;
+  }
+  .nav-links a:not(.btn-login)::after {
+    content: ""; position: absolute; left: 0; bottom: -2px; height: 2px; width: 0;
+    background: var(--sky); transition: width .25s;
+  }
+  .nav-links a:not(.btn-login):hover { color: var(--sky); }
+  .nav-links a:not(.btn-login):hover::after { width: 100%; }
+  .btn-login {
+    border: 2px solid var(--sky);
+    color: var(--sky) !important;
+    padding: 8px 22px !important; border-radius: 8px;
+    transition: all .2s;
+  }
+  .btn-login:hover { background: var(--sky); color: var(--black) !important; }
+  /* hamburger (mobile only) */
+  .menu-toggle {
+    display: none; flex-direction: column; justify-content: center; gap: 5px;
+    width: 44px; height: 44px; background: none; border: none; cursor: pointer; padding: 8px;
+  }
+  .menu-toggle span { display: block; height: 2px; width: 100%; background: #fff; border-radius: 2px; transition: transform .25s, opacity .2s; }
+  .menu-toggle.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .menu-toggle.active span:nth-child(2) { opacity: 0; }
+  .menu-toggle.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    background:
+      radial-gradient(1200px 500px at 80% -10%, rgba(141,235,251,.18), transparent 60%),
+      radial-gradient(900px 500px at 0% 110%, rgba(134,188,37,.18), transparent 55%),
+      var(--black);
+    color: #fff; padding: 96px 0 110px;
+  }
+  .hero .wrap { display: grid; grid-template-columns: 1.15fr .85fr; gap: 50px; align-items: center; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(134,188,37,.15); color: var(--green);
+    border: 1px solid rgba(134,188,37,.4);
+    padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 700;
+    letter-spacing: .4px; margin-bottom: 22px;
+  }
+  .badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+  .hero h1 { font-size: clamp(30px, 6vw, 48px); line-height: 1.18; font-weight: 800; letter-spacing: -.5px; }
+  .hero h1 .hl { color: var(--sky); }
+  .hero p.sub { margin-top: 20px; font-size: 18px; color: #c9ced3; max-width: 540px; }
+  .cta { margin-top: 34px; display: flex; gap: 14px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 28px; border-radius: 10px; font-weight: 700; font-size: 16px;
+    cursor: pointer; border: none; transition: transform .15s, box-shadow .2s;
+  }
+  .btn-primary { background: var(--green); color: #0a0a0a; }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(134,188,37,.35); }
+  .btn-ghost { background: transparent; color: var(--sky); border: 2px solid var(--sky); }
+  .btn-ghost:hover { background: rgba(141,235,251,.12); }
+
+  .hero-card {
+    background: linear-gradient(160deg, #141414, #1d1d1d);
+    border: 1px solid #2a2a2a; border-radius: 18px; padding: 28px;
+    box-shadow: 0 30px 60px rgba(0,0,0,.45);
+  }
+  .hero-card h3 { font-size: 15px; color: #9aa0a6; font-weight: 600; margin-bottom: 16px; }
+  .risk-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #262626; }
+  .risk-row:last-child { border-bottom: none; }
+  .risk-name { font-weight: 700; color: #fff; }
+  .risk-name span { display: block; font-size: 12px; color: #888; font-weight: 500; }
+  .meter { width: 120px; height: 8px; background: #2a2a2a; border-radius: 999px; overflow: hidden; }
+  .meter > i { display: block; height: 100%; border-radius: 999px; }
+  .tag { font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 6px; }
+  .t-high { background: rgba(255,86,86,.15); color: #ff7a7a; }
+  .t-mid { background: rgba(134,188,37,.18); color: var(--green); }
+  .t-low { background: rgba(141,235,251,.18); color: var(--sky); }
+
+  /* ---------- Stats strip ---------- */
+  .stats { background: var(--green); color: #0a0a0a; }
+  .stats .wrap { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; padding: 30px 24px; }
+  .stat b { font-size: 34px; font-weight: 800; display: block; line-height: 1.1; }
+  .stat span { font-size: 14px; font-weight: 600; opacity: .8; }
+
+  /* ---------- Section common ---------- */
+  .sec { padding: 96px 0; }
+  .sec.alt { background: #f6f8f9; }
+  .eyebrow { color: var(--green); font-weight: 800; letter-spacing: 1.5px; font-size: 13px; text-transform: uppercase; }
+  .sec h2 { font-size: clamp(26px, 4.5vw, 36px); font-weight: 800; letter-spacing: -.5px; margin: 10px 0 14px; }
+  .sec .lead { color: var(--gray); font-size: 18px; max-width: 720px; }
+
+  .grid3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; margin-top: 46px; }
+  .card {
+    background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 30px;
+    transition: transform .2s, box-shadow .2s, border-color .2s;
+  }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(0,0,0,.08); border-color: var(--green); }
+  .card .ico {
+    width: 52px; height: 52px; border-radius: 12px; display: grid; place-items: center;
+    background: var(--black); color: var(--sky); font-size: 24px; font-weight: 800; margin-bottom: 18px;
+  }
+  .card h3 { font-size: 20px; margin-bottom: 8px; }
+  .card p { color: var(--gray); font-size: 15px; }
+
+  /* Target firm table */
+  .table-card { margin-top: 44px; border: 1px solid var(--line); border-radius: 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; background:#fff; }
+  table { width: 100%; min-width: 640px; border-collapse: collapse; }
+  th, td { text-align: left; padding: 16px 22px; font-size: 15px; }
+  thead { background: var(--black); color: #fff; }
+  th { font-weight: 600; font-size: 13px; letter-spacing: .5px; text-transform: uppercase; }
+  tbody tr { border-top: 1px solid var(--line); }
+  tbody tr:hover { background: #f6f8f9; }
+  td.firm { font-weight: 700; }
+  .pill { font-size: 12px; font-weight: 800; padding: 4px 12px; border-radius: 999px; }
+  .p-high { background:#ffe5e5; color:#d23b3b; }
+  .p-watch { background:#eef7d9; color:#5d7e12; }
+  .p-stable { background:#e1f8fd; color:#1796b3; }
+
+  /* Tools */
+  .tool-card { display:flex; flex-direction:column; }
+  .tool-card .badge2 { align-self:flex-start; font-size:12px; font-weight:800; padding:4px 12px; border-radius:6px; background:rgba(141,235,251,.25); color:#1796b3; margin-bottom:14px; }
+  .tool-card a.link { margin-top:auto; color: var(--green-dark); font-weight:800; font-size:15px; display:inline-flex; align-items:center; gap:6px; padding-top:16px; }
+  .tool-card a.link:hover { gap:12px; }
+  .soon { color:#9aa0a6; font-weight:700; }
+
+  /* ---------- Footer ---------- */
+  footer { background: var(--black); color: #d7dadd; padding: 56px 0 30px; }
+  .foot-grid { display:grid; grid-template-columns: 1.3fr 1fr 1fr; gap:30px; }
+  footer .brand img { height: 46px; }
+  footer h4 { color:#fff; font-size:14px; letter-spacing:.5px; margin-bottom:14px; text-transform:uppercase; }
+  footer p, footer a { font-size:14px; color:#aab0b6; }
+  footer a:hover { color: var(--sky); }
+  .foot-contact li { list-style:none; margin-bottom:8px; display:flex; gap:8px; }
+  .foot-contact .k { color: var(--green); font-weight:700; min-width:54px; }
+  .copyright { border-top:1px solid #222; margin-top:40px; padding-top:22px; text-align:center; font-size:13px; color:#7c8288; }
+
+  /* ---------- Login modal ---------- */
+  .overlay {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(10,10,10,.6); backdrop-filter: blur(3px);
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .overlay.open { display: flex; }
+  .modal {
+    background:#fff; width: 100%; max-width: 410px; border-radius: 18px; padding: 36px 34px;
+    box-shadow: 0 30px 70px rgba(0,0,0,.4); animation: pop .22s ease;
+  }
+  @keyframes pop { from { transform: translateY(14px) scale(.97); opacity:0; } to { transform:none; opacity:1; } }
+  .modal-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
+  .modal h3 { font-size:24px; }
+  .modal .sub { color: var(--gray); font-size:14px; margin-bottom:24px; }
+  .close { background:none; border:none; font-size:26px; line-height:1; cursor:pointer; color:#9aa0a6; }
+  .field { margin-bottom:16px; }
+  .field label { display:block; font-size:13px; font-weight:700; margin-bottom:6px; }
+  .field input {
+    width:100%; padding:13px 14px; border:1.5px solid var(--line); border-radius:10px; font-size:15px;
+    transition: border-color .2s;
+  }
+  .field input:focus { outline:none; border-color: var(--green); }
+  .modal .btn-primary { width:100%; justify-content:center; margin-top:6px; }
+  .modal .alt { text-align:center; font-size:13px; color:var(--gray); margin-top:18px; }
+  .modal .alt a { color: var(--green-dark); font-weight:700; }
+  .note { background:#f6f8f9; border-radius:10px; padding:10px 12px; font-size:12px; color:#8a9098; margin-top:16px; text-align:center; }
+
+  /* ---------- Responsive ---------- */
+  /* Tablet */
+  @media (max-width: 980px) {
+    .hero .wrap { grid-template-columns: 1fr; gap: 40px; }
+    .hero { padding: 72px 0 84px; }
+    .grid3 { grid-template-columns: 1fr 1fr; }
+    .foot-grid { grid-template-columns: 1fr 1fr; gap: 24px; }
+  }
+
+  /* Mobile: hamburger nav */
+  @media (max-width: 760px) {
+    .menu-toggle { display: flex; }
+    .nav { height: 64px; }
+    .brand img { height: 42px; }
+    /* slide-down panel */
+    .nav-links {
+      position: absolute; top: 100%; left: 0; right: 0;
+      flex-direction: column; align-items: stretch; gap: 0;
+      background: rgba(10,10,10,0.98);
+      border-bottom: 2px solid var(--green);
+      padding: 8px 0 16px;
+      max-height: 0; overflow: hidden; opacity: 0;
+      transition: max-height .3s ease, opacity .25s ease, padding .3s ease;
+      pointer-events: none;
+    }
+    .nav-links.open { max-height: 360px; opacity: 1; padding: 8px 0 18px; pointer-events: auto; }
+    .nav-links a { padding: 14px 24px; font-size: 16px; }
+    .nav-links a:not(.btn-login)::after { display: none; }
+    .btn-login {
+      margin: 10px 24px 0; text-align: center;
+      padding: 12px 22px !important;
+    }
+    .grid3 { grid-template-columns: 1fr; gap: 18px; }
+    .stats .wrap { grid-template-columns: repeat(2,1fr); gap: 14px; padding: 24px; }
+    .foot-grid { grid-template-columns: 1fr; gap: 28px; }
+    .sec { padding: 64px 0; }
+    .card { padding: 24px; }
+    .hero .cta .btn { width: 100%; justify-content: center; }
+  }
+
+  /* Small phones */
+  @media (max-width: 420px) {
+    .wrap { padding: 0 18px; }
+    .stats .wrap { grid-template-columns: 1fr; }
+    .stat b { font-size: 28px; }
+    .modal { padding: 28px 22px; }
+    .hero .badge { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== Header ===== -->
+<header>
+  <div class="wrap nav">
+    <a href="#top" class="brand"><img src="YB_logo.png" alt="YB Research 로고" /></a>
+    <button class="menu-toggle" id="menuToggle" aria-label="메뉴 열기" aria-expanded="false" aria-controls="navLinks">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="nav-links" id="navLinks">
+      <a href="#about">About</a>
+      <a href="#target">Target Firm</a>
+      <a href="#tools">Tools</a>
+      <a href="#" class="btn-login" id="openLogin">Rog in</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ===== Hero ===== -->
+<a id="top"></a>
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <span class="badge"><span class="dot"></span> 기업 유동성 · 디폴트 리스크 리서치</span>
+      <h1>위기를 <span class="hl">데이터</span>로 먼저 읽다.<br />기업 디폴트 가능성을 리서치합니다.</h1>
+      <p class="sub">재무 데이터와 시장 신호를 결합해 유동성 위기(디폴트) 가능성이 높은 기업을 사전에 탐지합니다. 누구나 쉽게 활용할 수 있는 리서치 플랫폼을 지향합니다.</p>
+      <div class="cta">
+        <button class="btn btn-primary" onclick="location.href='#tools'">리서치 툴 살펴보기 →</button>
+        <button class="btn btn-ghost" onclick="location.href='#about'">서비스 소개</button>
+      </div>
+    </div>
+    <div class="hero-card">
+      <h3>실시간 디폴트 리스크 모니터 (예시)</h3>
+      <div class="risk-row">
+        <div class="risk-name">A 제조<span>회사채 BBB-</span></div>
+        <div class="meter"><i style="width:88%;background:#ff6b6b"></i></div>
+        <span class="tag t-high">HIGH</span>
+      </div>
+      <div class="risk-row">
+        <div class="risk-name">B 유통<span>회사채 BBB+</span></div>
+        <div class="meter"><i style="width:58%;background:var(--green)"></i></div>
+        <span class="tag t-mid">WATCH</span>
+      </div>
+      <div class="risk-row">
+        <div class="risk-name">C 바이오<span>비상장</span></div>
+        <div class="meter"><i style="width:74%;background:#ff8c42"></i></div>
+        <span class="tag t-high">HIGH</span>
+      </div>
+      <div class="risk-row">
+        <div class="risk-name">D 금융<span>회사채 A</span></div>
+        <div class="meter"><i style="width:30%;background:var(--sky)"></i></div>
+        <span class="tag t-low">STABLE</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Stats ===== -->
+<div class="stats">
+  <div class="wrap">
+    <div class="stat"><b>1,200+</b><span>분석 대상 기업</span></div>
+    <div class="stat"><b>20+</b><span>재무·시장 지표</span></div>
+    <div class="stat"><b>실시간</b><span>리스크 스코어링</span></div>
+    <div class="stat"><b>0원</b><span>기본 리서치 열람</span></div>
+  </div>
+</div>
+
+<!-- ===== About ===== -->
+<section id="about" class="sec">
+  <div class="wrap">
+    <p class="eyebrow">About</p>
+    <h2>YB Research는 어떤 서비스인가요?</h2>
+    <p class="lead">YB Research는 기업의 유동성 위기, 즉 디폴트(채무 불이행) 가능성을 데이터 기반으로 리서치하는 플랫폼입니다. 복잡한 재무제표와 시장 데이터를 누구나 이해할 수 있는 리스크 신호로 변환합니다.</p>
+    <div class="grid3">
+      <div class="card">
+        <div class="ico">📊</div>
+        <h3>데이터 기반 분석</h3>
+        <p>부채비율, 이자보상배율, 현금흐름 등 핵심 재무 지표와 시장 신호를 종합해 디폴트 가능성을 정량화합니다.</p>
+      </div>
+      <div class="card">
+        <div class="ico">⚡</div>
+        <h3>조기 경보</h3>
+        <p>위기 징후가 재무제표에 드러나기 전, 시장과 신용 데이터의 미세한 변화를 포착해 선제적으로 경고합니다.</p>
+      </div>
+      <div class="card">
+        <div class="ico">🤝</div>
+        <h3>누구나 쉽게</h3>
+        <p>전문 투자자가 아니어도 직관적인 리스크 점수와 시각화로 기업의 재무 건전성을 한눈에 파악할 수 있습니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Target Firm ===== -->
+<section id="target" class="sec alt">
+  <div class="wrap">
+    <p class="eyebrow">Target Firm</p>
+    <h2>어떤 기업을 리서치하나요?</h2>
+    <p class="lead">유동성 위기 가능성이 감지된 기업을 선별해 리스크 등급과 함께 제공합니다. 아래는 분석 결과 형태의 예시입니다.</p>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr><th>기업</th><th>업종</th><th>신용등급</th><th>주요 신호</th><th>리스크</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="firm">A 제조</td><td>제조업</td><td>BBB-</td><td>이자보상배율 1 미만 지속</td><td><span class="pill p-high">디폴트 경고</span></td></tr>
+          <tr><td class="firm">B 유통</td><td>도소매</td><td>BBB+</td><td>단기차입 급증 · 현금흐름 둔화</td><td><span class="pill p-watch">관찰 필요</span></td></tr>
+          <tr><td class="firm">C 바이오</td><td>제약·바이오</td><td>비상장</td><td>영업적자 누적 · 자본잠식 근접</td><td><span class="pill p-high">디폴트 경고</span></td></tr>
+          <tr><td class="firm">D 금융</td><td>금융</td><td>A</td><td>지표 안정 · 유동성 충분</td><td><span class="pill p-stable">안정</span></td></tr>
+          <tr><td class="firm">E 건설</td><td>건설</td><td>BB+</td><td>PF 우발채무 · 미분양 증가</td><td><span class="pill p-watch">관찰 필요</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Tools ===== -->
+<section id="tools" class="sec">
+  <div class="wrap">
+    <p class="eyebrow">Tools</p>
+    <h2>리서치 툴</h2>
+    <p class="lead">디폴트 리스크를 직접 분석할 수 있는 도구를 제공합니다. 별도로 개발 중인 리서치 툴은 완성 후 이곳에 링크 형태로 연결됩니다.</p>
+    <div class="grid3">
+      <div class="card tool-card">
+        <span class="badge2">SCORING</span>
+        <h3>디폴트 스코어 계산기</h3>
+        <p>기업의 재무 지표를 입력하면 디폴트 가능성 점수를 즉시 산출합니다.</p>
+        <a class="link" href="#" onclick="toolAlert(event)">바로가기 →</a>
+      </div>
+      <div class="card tool-card">
+        <span class="badge2">SCREENING</span>
+        <h3>기업 스크리너</h3>
+        <p>업종·신용등급·재무 조건으로 위험 기업을 필터링해 탐색합니다.</p>
+        <a class="link" href="#" onclick="toolAlert(event)">바로가기 →</a>
+      </div>
+      <div class="card tool-card">
+        <span class="badge2">MONITOR</span>
+        <h3>리스크 모니터링</h3>
+        <p>관심 기업을 등록하고 리스크 변화를 지속적으로 추적합니다. <span class="soon">(준비 중)</span></p>
+        <a class="link soon" href="#" onclick="toolAlert(event)">출시 예정</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Footer ===== -->
+<footer>
+  <div class="wrap foot-grid">
+    <div>
+      <div class="brand"><img src="YB_logo.png" alt="YB Research 로고" /></div>
+      <p style="margin-top:14px;max-width:300px;">기업 유동성 위기와 디폴트 가능성을 데이터로 리서치하는 플랫폼.</p>
+    </div>
+    <div>
+      <h4>Navigation</h4>
+      <p><a href="#about">About</a></p>
+      <p><a href="#target">Target Firm</a></p>
+      <p><a href="#tools">Tools</a></p>
+    </div>
+    <div>
+      <h4>Contact</h4>
+      <ul class="foot-contact">
+        <li><span class="k">Made by</span><span>Yubin Kim</span></li>
+        <li><span class="k">Tel</span><a href="tel:01097814002">010-9781-4002</a></li>
+        <li><span class="k">Mail</span><a href="mailto:opop1802gmail.com">opop1802gmail.com</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="copyright">Copyright @Yubin Kim. All rights reserved.</div>
+</footer>
+
+<!-- ===== Login Modal ===== -->
+<div class="overlay" id="loginOverlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+    <div class="modal-top">
+      <h3 id="loginTitle">로그인</h3>
+      <button class="close" id="closeLogin" aria-label="닫기">&times;</button>
+    </div>
+    <p class="sub">YB Research 계정으로 로그인하세요.</p>
+    <form onsubmit="return loginSubmit(event)">
+      <div class="field">
+        <label for="email">이메일</label>
+        <input type="email" id="email" placeholder="name@example.com" required />
+      </div>
+      <div class="field">
+        <label for="pw">비밀번호</label>
+        <input type="password" id="pw" placeholder="••••••••" required />
+      </div>
+      <button type="submit" class="btn btn-primary">로그인</button>
+    </form>
+    <p class="alt">계정이 없으신가요? <a href="#">회원가입</a></p>
+    <div class="note">⚙️ 로그인 기능은 아직 준비 중입니다 (UI 데모).</div>
+  </div>
+</div>
+
+<script>
+  // ---- Mobile hamburger nav ----
+  const menuToggle = document.getElementById('menuToggle');
+  const navLinks = document.getElementById('navLinks');
+  function setMenu(open){
+    navLinks.classList.toggle('open', open);
+    menuToggle.classList.toggle('active', open);
+    menuToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  menuToggle.addEventListener('click', function(){
+    setMenu(!navLinks.classList.contains('open'));
+  });
+  // 메뉴 항목(로그인 제외) 클릭 시 닫기
+  navLinks.querySelectorAll('a:not(.btn-login)').forEach(function(a){
+    a.addEventListener('click', function(){ setMenu(false); });
+  });
+
+  // ---- Login modal ----
+  const overlay = document.getElementById('loginOverlay');
+  document.getElementById('openLogin').addEventListener('click', function(e){
+    e.preventDefault(); setMenu(false); overlay.classList.add('open');
+  });
+  function closeModal(){ overlay.classList.remove('open'); }
+  document.getElementById('closeLogin').addEventListener('click', closeModal);
+  overlay.addEventListener('click', function(e){ if(e.target === overlay) closeModal(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeModal(); });
+  function loginSubmit(e){
+    e.preventDefault();
+    alert('로그인 기능은 아직 준비 중입니다.');
+    return false;
+  }
+  function toolAlert(e){
+    e.preventDefault();
+    alert('리서치 툴은 현재 개발 중이며, 완성되면 이곳에 링크로 연결됩니다.');
+  }
+</script>
+</body>
+</html>
